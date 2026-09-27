@@ -11,7 +11,7 @@ restano sul dispositivo (`localStorage`).
 
 ```bash
 npm install
-npm test          # test unitari del modulo di calcolo
+npm test          # test unitari (calcolo e avanzamento del ciclo)
 npm run scenari   # stampa gli scenari di calcolo con la configurazione predefinita
 npm run dev       # server di sviluppo
 npm run build     # typecheck + build di produzione
@@ -20,12 +20,16 @@ npm run build     # typecheck + build di produzione
 `npm run scenari` esegue direttamente `scripts/scenari.ts`, quindi richiede
 Node ≥ 22.18.
 
+Per provarla dal telefono sulla stessa rete Wi-Fi: `npm run dev -- --host` e
+apri dal telefono l'indirizzo "Network" che compare. In http la copia degli
+importi usa un metodo di riserva, quindi funziona anche senza https.
+
 ## Stato
 
 - [x] Scaffolding (React 19, Vite 8, TypeScript 6, Tailwind 4, Vitest 5)
 - [x] Modulo di calcolo dei giroconti con test
-- [ ] Schermata dei giroconti
-- [ ] Cruscotto, spese per categoria, storico, impostazioni, PWA
+- [x] Schermata dei giroconti
+- [ ] Cruscotto, spese per categoria, storico, impostazioni, export/import, PWA
 
 ## Struttura
 
@@ -35,8 +39,41 @@ src/dominio/          logica pura, senza UI né storage
   conti.ts            i quattro conti
   configurazione.ts   valori predefiniti, ripartizione e validazione
   giroconti.ts        tranche 1 e 2, piano accorpato, verifica e chiusura del ciclo
+src/stato/            stato dell'app, anch'esso in funzioni pure testate
+  modello.ts          forma dei dati salvati (versionata)
+  ciclo.ts            avanzamento del ciclo: bozze, segni, completamento, chiusura
+  persistenza.ts      salvataggio in localStorage e verifica della forma dei dati
+src/ui/               componenti riutilizzabili (campo importo, scheda bonifico, …)
+src/schermate/        le schermate; per ora quella dei giroconti
 scripts/scenari.ts    report leggibile degli scenari principali
 ```
+
+## La schermata dei giroconti
+
+Il ciclo va avanti in tre passi: **tranche 1** (stipendio di Frank),
+**tranche 2** (stipendio di MG) e **chiusura** a fine mese.
+
+- I bonifici compaiono man mano che inserisci i saldi, in ordine e con il
+  prossimo da fare evidenziato. **Un tap sull'importo lo copia** nel formato da
+  incollare nell'app della banca (`1490,00`).
+- Ogni bonifico ha la sua casella "Segna come fatto". Al primo segno i saldi di
+  quella fase si bloccano, così gli importi non cambiano a metà strada;
+  "Modifica i saldi" toglie i segni. Quando tutti i bonifici di una tranche
+  sono segnati, la tranche è completata e i saldi registrati vengono aggiornati
+  con quelli dopo i bonifici.
+- Tutto viene salvato sul dispositivo a ogni modifica: si può passare all'app
+  della banca e tornare anche se il browser ricarica la pagina.
+- Un piano bloccato (regola dei 1.000 €, soglia di ING, saldi insufficienti)
+  resta visibile ma non si può eseguire: gli importi non si copiano e le
+  caselle sono disabilitate. Per la regola dei 1.000 € si può passare al piano
+  accorpato con un tap.
+- Dopo la tranche 2 compare la verifica di fine ciclo (variazione netta di ING
+  contro il target). In chiusura si inseriscono i saldi reali: l'app propone il
+  giroconto dell'avanzo di casa o la copertura di uno sforamento, archivia il
+  ciclo e ne avvia uno nuovo con i residui sfizi già inseriti.
+- "La casa ha sforato?" copre uno sforamento durante il ciclo, sempre da ING.
+- Il ciclo in corso usa i parametri fissati al suo avvio: se in futuro cambia la
+  configurazione, vale dal ciclo successivo.
 
 ## Numeri di riferimento
 
