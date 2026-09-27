@@ -450,8 +450,10 @@ fi
 
 cd "$RADICE"
 
-VERSIONE="sconosciuta"
-if git rev-parse --git-dir >/dev/null 2>&1; then
+# La versione è il commit: da git se questa è una copia git, altrimenti da chi
+# ha scaricato i sorgenti (deploy/installa.sh la passa in VERSIONE_PUBBLICATA).
+VERSIONE="${VERSIONE_PUBBLICATA:-sconosciuta}"
+if [[ "$(git rev-parse --show-toplevel 2>/dev/null)" == "$(pwd -P)" ]]; then
   VERSIONE="$(git rev-parse --short HEAD 2>/dev/null || echo sconosciuta)"
   if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
     VERSIONE="$VERSIONE-modificata"

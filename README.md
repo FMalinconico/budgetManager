@@ -81,6 +81,35 @@ file (prima quelli nuovi, poi `index.html`, infine toglie quelli vecchi); alla
 fine controlla che `http://server:porta/versione.txt` risponda con la versione
 appena pubblicata e stampa l'indirizzo da aprire sul telefono.
 
+### Installazione con curl, direttamente sul server
+
+Senza copiare niente a mano: entra nel server con SSH, con un utente che può
+usare sudo, e lancia un solo comando. `deploy/installa.sh` scarica i sorgenti in
+`~/budget-famiglia`, controlla che ci siano Node.js 20.19+ e rsync (se mancano
+propone di installarli), poi esegue `deploy/pubblica.sh` sulla macchina stessa:
+la prima volta chiede la porta e configura Apache.
+
+Con il repository pubblico (anche solo per il tempo dell'installazione):
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/FMalinconico/budgetManager/HEAD/deploy/installa.sh)
+```
+
+Con il repository privato serve un token GitHub in sola lettura: su GitHub,
+Settings → Developer settings → Personal access tokens → Fine-grained tokens →
+Generate new token; in "Repository access" scegli solo `budgetManager` e in
+"Permissions" dai "Contents: Read-only". Poi:
+
+```bash
+read -rsp "Token GitHub: " GITHUB_TOKEN && echo && export GITHUB_TOKEN && bash <(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github.raw+json" https://api.github.com/repos/FMalinconico/budgetManager/contents/deploy/installa.sh)
+```
+
+Per aggiornare l'app dopo nuove modifiche basta rilanciare lo stesso comando.
+Le opzioni di `deploy/pubblica.sh` vanno in fondo, dopo la parentesi: per
+esempio `bash <(curl …) --installa` per cambiare porta.
+
+### Altre opzioni
+
 - Per cambiare porta: `deploy/pubblica.sh --installa`.
 - Senza domande (per esempio da un altro script): `PORTA=8080 deploy/pubblica.sh`.
 - Direttamente sul server, se lì c'è Node.js: con `SERVER=""` lo script lavora in
