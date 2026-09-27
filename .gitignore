@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Configurazione locale della pubblicazione (indirizzo del server)
+deploy/pubblica.conf

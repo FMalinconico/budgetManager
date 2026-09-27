@@ -46,7 +46,54 @@ src/stato/            stato dell'app, anch'esso in funzioni pure testate
 src/ui/               componenti riutilizzabili (campo importo, scheda bonifico, …)
 src/schermate/        le schermate; per ora quella dei giroconti
 scripts/scenari.ts    report leggibile degli scenari principali
+deploy/pubblica.sh    pubblicazione su un server Linux con Apache
 ```
+
+## Pubblicazione sul server
+
+`deploy/pubblica.sh` pubblica l'app su un server Linux con Apache. L'app è
+fatta solo di file statici: Apache la serve su una porta tutta sua, e i saldi
+restano nel browser di chi la usa, non sul server.
+
+Cosa serve:
+
+- sul computer da cui pubblichi: Node.js 20.19 o successivo (22.12+ per la
+  serie 22), npm, rsync e ssh;
+- sul server: Apache (`apache2` su Debian e Ubuntu, `httpd` su Red Hat, Fedora
+  e simili), rsync e un utente SSH che può usare sudo.
+
+La prima volta:
+
+```bash
+cp deploy/pubblica.conf.esempio deploy/pubblica.conf   # indica il server in SERVER
+deploy/pubblica.sh --prova                             # facoltativo: mostra cosa farebbe
+deploy/pubblica.sh
+```
+
+Lo script chiede su quale porta servire l'app (rifiuta quelle già occupate) e,
+con sudo, crea la cartella `/var/www/budget-famiglia`, aggiunge ad Apache un
+sito dedicato su quella porta, lo attiva e ricarica Apache. Se Apache rifiuta
+la nuova configurazione, rimette quella di prima. Se sul server è attivo un
+firewall (ufw o firewalld), indica il comando per aprire la porta.
+
+Le volte successive `deploy/pubblica.sh` esegue i test, compila l'app e copia i
+file (prima quelli nuovi, poi `index.html`, infine toglie quelli vecchi); alla
+fine controlla che `http://server:porta/versione.txt` risponda con la versione
+appena pubblicata e stampa l'indirizzo da aprire sul telefono.
+
+- Per cambiare porta: `deploy/pubblica.sh --installa`.
+- Senza domande (per esempio da un altro script): `PORTA=8080 deploy/pubblica.sh`.
+- Direttamente sul server, se lì c'è Node.js: con `SERVER=""` lo script lavora in
+  locale.
+- La cartella di destinazione deve essere dedicata all'app: lo script si rifiuta
+  di pubblicare in una cartella non vuota che non ha mai usato, salvo `--forza`.
+
+L'app si apre in http semplice e funziona così, compresa la copia degli
+importi. Per installarla come PWA servirà https, cioè un dominio con un
+certificato. Chi raggiunge la porta vede l'app: non i vostri saldi, che restano
+nel browser, ma sì gli importi predefiniti come stipendi e mutui. Se il server è
+raggiungibile da internet conviene aprire la porta solo sulla rete di casa o
+proteggerla con una password.
 
 ## La schermata dei giroconti
 

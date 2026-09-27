@@ -1,0 +1,25 @@
+# Configurazione di deploy/pubblica.sh.
+# Copia questo file in deploy/pubblica.conf (che resta fuori da git) e adattalo.
+# La forma "${NOME-valore}" lascia la precedenza a una variabile d'ambiente con
+# lo stesso nome, se c'è.
+
+# Utente e indirizzo del server, come li useresti con ssh. Per l'installazione
+# su Apache l'utente deve poter usare sudo. Lascialo vuoto ("") se lanci lo
+# script direttamente sul server.
+SERVER="${SERVER-frank@mio-server.example}"
+
+# Cartella da cui Apache serve l'app, dedicata solo all'app: a ogni
+# pubblicazione il suo contenuto viene sostituito.
+DESTINAZIONE="${DESTINAZIONE-/var/www/budget-famiglia}"
+
+# Porta su cui Apache servirà l'app. Se resta vuota, lo script la chiede
+# all'installazione (la prima volta, oppure con --installa).
+PORTA="${PORTA-}"
+
+# Porta SSH e, se serve, la chiave privata da usare.
+PORTA_SSH="${PORTA_SSH-22}"
+CHIAVE_SSH="${CHIAVE_SSH-}"
+
+# Indirizzo dell'app, solo se non è http://server:porta (per esempio se un
+# giorno la metti dietro un dominio): serve alla verifica finale.
+URL_PUBBLICO="${URL_PUBBLICO-}"
